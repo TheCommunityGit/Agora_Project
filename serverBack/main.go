@@ -9,7 +9,7 @@ import (
 
 func main() {
 	fmt.Println("Try to connect to DB")
-	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/testGo")
+	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/agora")
 
 	if err != nil {
 		fmt.Println("Error connecting")
@@ -27,13 +27,5 @@ func main() {
 	} else {
 		fmt.Println("STILL IN BABY")
 	}
-	insert, err := db.Query("INSERT INTO users VALUES(123,'LucasTide',9,'2001-03-23')")
-	if err != nil {
-		fmt.Println("the query failed", err)
-		return
-	} else {
-		fmt.Println("success!!!")
-	}
 
-	insert.Close()
 } // end of main
