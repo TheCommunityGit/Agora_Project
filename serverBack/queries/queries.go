@@ -1,63 +1,75 @@
-package main 
+package main
 
 import (
-	"fmt"
 	"database/sql"
+	"fmt"
 
 	_ "github.com/go-sql-driver/mysql" // Import the MySQL driver
 )
 
-
-func Listings(db *sql.DB) []string{
-	var result []string
-	query, err := db.Query("select * from listings")
-	if err != nil{
-		fmt.Println("query failed")
-	}else{
-		result = append(result,query)
-	}
-	return result
-
+type listing struct {
+	email       string
+	listID      int
+	title       string
+	description string
+	img         string
+	active      bool
+	category    string
+	rarity      string
 }
-func MyListings(db *sql.DB, email string) []string{
-	var result  []string
-	query, err := db.Query(fmt.Sprintf("select * from listings where email = %s",email))
-	if err != nil{
-		fmt.Println("query failed")
-	}else{
-		result = append(result,query)
+
+func Listings(db *sql.DB) []listing {
+	rows, err := db.Query("select * from listings")
+	if err != nil {
+		fmt.Println("query failed at Listings")
+		return nil
 	}
-	return result
+	defer rows.Close()
+	var listings []listing
 
+	for rows.Next() {
+		var currListing listing
 
-}
-func Chat(db *sql.DB, email string) []string{
-	var result  []string
-	query, err := db.Query(fmt.Sprintf("select * from chats where users like \" % %s % \"",email))
-	if err != nil{
-		fmt.Println("query failed")
-	}else{
-		or rows.Next() {
-			var 
-		if err := rows.Scan(&alb.ID, &alb.Title, &alb.Artist, &alb.Price); err != nil {
-		    return nil, fmt.Errorf("albumsByArtist %q: %v", name, err)
+		if err := rows.Scan(&currListing.email, &currListing.listID,
+			&currListing.title, &currListing.description,
+			&currListing.img, &currListing.active,
+			&currListing.category, &currListing.rarity); err != nil {
+			return listings
 		}
-		albums = append(albums, alb)
-		for _, response := range query {
-			result = append(result,string(response))
-		}
+		listings = append(listings, currListing)
+
 	}
-	return result
-
-
+	if err = rows.Err(); err != nil {
+		fmt.Println(err)
+		return listings
+	}
+	return listings
 }
-func Messages(db *sql.DB, cID string) []string{
-	var result  []string
-	query, err := db.Query(fmt.Sprintf("select * from messages where cID = %s",cID))
-	if err != nil{
-		fmt.Println("query failed")
-	}else{
-		result = append(result,query)
+
+func UserListings(db *sql.DB, email string) []listing {
+	rows, err := db.Query("select * from listings where email = ?", email)
+	if err != nil {
+		fmt.Println("query failed at UserListings")
+		return nil
 	}
-	return result
+	defer rows.Close()
+	var listings []listing
+
+	for rows.Next() {
+		var currListing listing
+
+		if err := rows.Scan(&currListing.email, &currListing.listID,
+			&currListing.title, &currListing.description,
+			&currListing.img, &currListing.active,
+			&currListing.category, &currListing.rarity); err != nil {
+			return listings
+		}
+		listings = append(listings, currListing)
+
+	}
+	if err = rows.Err(); err != nil {
+		fmt.Println(err)
+		return listings
+	}
+	return listings
 }
