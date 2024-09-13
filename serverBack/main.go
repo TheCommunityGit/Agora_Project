@@ -1,15 +1,19 @@
 package main
 
 import (
+	"backend/routes"
 	"database/sql"
 	"fmt"
+	"net/http"
 
-	_ "github.com/go-sql-driver/mysql" // Import the MySQL driver
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/handlers"
 )
 
 func main() {
+	// Connect to database
 	fmt.Println("Try to connect to DB")
-	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/agora")
+	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/Agora_Project")
 
 	if err != nil {
 		fmt.Println("Error connecting")
@@ -19,13 +23,23 @@ func main() {
 	}
 	defer db.Close()
 
-	err = db.Ping()
+	// Initialize router and handlers
+	router := http.NewServeMux()
+	router.HandleFunc("/allList", routes.HandleQueryAll(db))
 
-	if err != nil {
-		fmt.Println("The Connection died")
-		return
-	} else {
-		fmt.Println("STILL IN BABY")
+	// Setup CORS
+	corsHandler := handlers.CORS(
+		handlers.AllowedOrigins([]string{"http://localhost:5173"}), // Allow only frontend origin
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
+		handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
+	)(router)
+
+	// Start server
+	server := http.Server{
+		Addr:    ":8080",
+		Handler: corsHandler,
 	}
 
-} // end of main
+	fmt.Println("Server listening on port :8080")
+	server.ListenAndServe()
+}

@@ -1,75 +1,47 @@
-package main
+package queries
 
 import (
 	"database/sql"
 	"fmt"
-
-	_ "github.com/go-sql-driver/mysql" // Import the MySQL driver
 )
 
-type listing struct {
-	email       string
-	listID      int
-	title       string
-	description string
-	img         string
-	active      bool
-	category    string
-	rarity      string
+type Listing struct {
+	Email       string `json:"email"`
+	ListID      int    `json:"listID"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Img         string `json:"img"`
+	Active      bool   `json:"active"`
+	Category    string `json:"category"`
+	Rarity      string `json:"rarity"`
 }
 
-func Listings(db *sql.DB) []listing {
-	rows, err := db.Query("select * from listings")
+func Listings(db *sql.DB) []Listing {
+	fmt.Println("ITS QUERING TIME BABYYYYYYY!!!")
+	rows, err := db.Query("SELECT * FROM listings")
 	if err != nil {
-		fmt.Println("query failed at Listings")
+		fmt.Println("Query failed at Listings:", err)
 		return nil
 	}
 	defer rows.Close()
-	var listings []listing
+
+	var listings []Listing
 
 	for rows.Next() {
-		var currListing listing
-
-		if err := rows.Scan(&currListing.email, &currListing.listID,
-			&currListing.title, &currListing.description,
-			&currListing.img, &currListing.active,
-			&currListing.category, &currListing.rarity); err != nil {
+		var currListing Listing
+		if err := rows.Scan(&currListing.Email, &currListing.ListID,
+			&currListing.Title, &currListing.Description, &currListing.Img,
+			&currListing.Active, &currListing.Category, &currListing.Rarity); err != nil {
+			fmt.Println("Row scan failed:", err)
 			return listings
 		}
 		listings = append(listings, currListing)
-
 	}
+
 	if err = rows.Err(); err != nil {
-		fmt.Println(err)
+		fmt.Println("Rows error:", err)
 		return listings
 	}
-	return listings
-}
 
-func UserListings(db *sql.DB, email string) []listing {
-	rows, err := db.Query("select * from listings where email = ?", email)
-	if err != nil {
-		fmt.Println("query failed at UserListings")
-		return nil
-	}
-	defer rows.Close()
-	var listings []listing
-
-	for rows.Next() {
-		var currListing listing
-
-		if err := rows.Scan(&currListing.email, &currListing.listID,
-			&currListing.title, &currListing.description,
-			&currListing.img, &currListing.active,
-			&currListing.category, &currListing.rarity); err != nil {
-			return listings
-		}
-		listings = append(listings, currListing)
-
-	}
-	if err = rows.Err(); err != nil {
-		fmt.Println(err)
-		return listings
-	}
 	return listings
 }
